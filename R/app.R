@@ -22,6 +22,11 @@ chemonitor_ui <- function(config) {
       )
     ),
     shinyjs::useShinyjs(),
+    tags$style(HTML("
+      .datatables {
+        font-size: 10px;
+      }
+    ")),
     plotly::plotlyOutput("plot"),
     DT::DTOutput("selection_table")
   )
@@ -51,7 +56,6 @@ chemonitor_server <- function(config) {
 
     observeEvent(d_selected_stage(), {
       update_select_input(session, "result_name", get_var_choices(d_selected_stage(), "result_name"))
-      # update_filter_ui(session, d_selected_stage(), reset = FALSE)
     })
 
     d_selected_result <- reactive({
