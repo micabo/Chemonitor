@@ -74,7 +74,12 @@ is_chemonitor_base <- function(x) {
 
 #' @export
 get_categorical_vars.chemonitor_base <- function(obj, ...) {
-  c("production_line", "lineage")
+  c(
+    "stage",
+    "result_name",
+    "production_line",
+    "lineage"
+  )
 }
 
 
