@@ -44,7 +44,8 @@ CHEMONITOR_VARS <- c(
   "result_loq",
   "production_date",
   "production_line",
-  "lineage"
+  "production_process" # ,
+  # "lineage"
 )
 
 
@@ -78,7 +79,8 @@ get_categorical_vars.chemonitor_base <- function(obj, ...) {
     "stage",
     "result_name",
     "production_line",
-    "lineage"
+    "production_process" # ,
+    # "lineage"
   )
 }
 
@@ -110,25 +112,15 @@ get_var_choices.chemonitor_base <- function(obj, var, ...) {
 
 #' @export
 to_plot.chemonitor_base <- function(obj, color_by = NULL, ...) {
-  product <- unique(obj$product)[[1]]
-  stage <- unique(obj$stage)[[1]]
-  result_name <- unique(obj$result_name)[[1]]
-  result_unit <- unique(obj$result_unit)[[1]]
-
-  title <- paste0(result_name, " on ", product, ": ", stage)
-  y_title <- paste0(result_name, " (", result_unit, ")")
-
   if (!is.null(color_by)) {
     obj$color <- do.call(combine_factors, obj[color_by])
     color_by <- "color"
   }
 
-  p <- category_plot(obj, "lineage", "result_value",
+  p <- category_plot(obj, "stage", "result_value",
     order = "production_date",
     colour = color_by,
-    key = "row_id",
-    title = title,
-    y_title = y_title
+    key = "row_id"
   )
 
   p <- plotly::event_register(p, "plotly_selected")
