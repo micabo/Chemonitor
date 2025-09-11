@@ -14,12 +14,17 @@ chemonitor_ui <- function(config) {
     ),
     sidebar = bslib::sidebar(
       width = 300,
-      tabsetPanel(
-        type = "tabs",
-        tabPanel("Data", data_ui("product", config)),
-        tabPanel("Filter", filter_ui("filter", config)),
-        tabPanel("Analysis", analysis_ui("analysis", config))
+      bslib::accordion(
+        bslib::accordion_panel("Data", data_ui("product", config)),
+        bslib::accordion_panel("Filter", filter_ui("filter", config)),
+        bslib::accordion_panel("Analysis", analysis_ui("analysis", config))
       )
+      # tabsetPanel(
+      #   type = "tabs",
+      #   tabPanel("Data", data_ui("product", config)),
+      #   tabPanel("Filter", filter_ui("filter", config)),
+      #   tabPanel("Analysis", analysis_ui("analysis", config))
+      # )
     ),
     shinyjs::useShinyjs(),
     tags$style(HTML("

@@ -1,7 +1,6 @@
 analysis_ui <- function(id, config) {
   color_vars <- get_categorical_vars(config$data[[1]])
   tags <- tagList(
-    sidebarHeader("Analysis Options"),
     create_select_input(
       inputId = NS(id, "analysis_type"),
       label = to_title("analysis_type"),

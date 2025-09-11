@@ -3,7 +3,6 @@ filter_ui <- function(id, config) {
   date_range <- get_var_choices(d, "production_date")
   filter_ids <- get_categorical_vars(d)
   tags <- tagList(
-    sidebarHeader("Apply Filter"),
     dateRangeInput(
       inputId = NS(id, "production_date"),
       label = to_title("production_date"),
