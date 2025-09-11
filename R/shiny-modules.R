@@ -87,7 +87,6 @@ filter_ui <- function(id, config) {
   date_range <- get_var_choices(d, "production_date")
   filter_ids <- get_categorical_vars(d)
   tags <- tagList(
-    sidebarHeader("Apply Filter"),
     dateRangeInput(
       inputId = NS(id, "production_date"),
       label = to_title("production_date"),
@@ -142,7 +141,6 @@ filter_server <- function(id, data) {
 analysis_ui <- function(id, config) {
   color_vars <- get_categorical_vars(config$data[[1]])
   tags <- tagList(
-    sidebarHeader("Analysis Options"),
     create_select_input(
       inputId = NS(id, "analysis_type"),
       label = to_title("analysis_type"),
