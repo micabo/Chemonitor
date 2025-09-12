@@ -46,7 +46,7 @@ get_dummy_data <- function() {
   #   # lineage = sample(LETTERS[1:5], 100, replace = TRUE)
   # )
 
-  d <- simulate_data_1()
+  d <- simulate_data_2()
 
   return(chemonitor_base(d))
 }
@@ -87,4 +87,56 @@ simulate_data_1 <- function() {
   result_info <- dplyr::bind_rows(purity, total_imp, water)
 
   my_data <- merge(batch_info, result_info)
+}
+
+
+simulate_data_2 <- function() {
+  # create batch lineages
+  n_lineage <- 25
+  batch_w_lineage <- data.frame(
+    product = "Acetotransmyrin",
+    production_line = sample(c("P15", "P10", "P5", "X7"), n_lineage, TRUE),
+    batch_lineage = sample(LETTERS, n_lineage),
+    batch_base_production_date = sort(lubridate::dmy("10.09.2025") + sample(1:500, n_lineage, TRUE) - 500),
+    batch_base_id = (1:n_lineage) * 10
+  )
+  batch_w_lineage$production_process <- "LSP"
+  batch_w_lineage$production_process[batch_w_lineage$production_line == "X7"] <- "SSP"
+  batch_w_lineage$production_process[batch_w_lineage$production_line == "P15" & batch_w_lineage$batch_base_production_date > lubridate::dmy("01.01.2025")] <- "RLSP"
+
+
+  add_result <- function(data, n_stages, result_name, result_unit, result_function) {
+    # add results
+    n_row <- nrow(data)
+    for (stage in 1:n_stages) {
+      data[[paste0("stage-", stage)]] <- result_function(n_row, stage)
+    }
+    data <- tidyr::pivot_longer(data, cols = tidyr::starts_with("stage"), names_to = "stage", values_to = "result_value")
+    data <- tidyr::separate(data, "stage", c("result_name", "batch_stage"))
+    data$result_name <- result_name
+    data$result_unit <- result_unit
+    return(data)
+  }
+
+  # purity <- add_result(batch_w_lineage, 4, "Purity", "%a/a", function(n_row, stage) {round(95 + stage + runif(n_row), 2)})
+  purity <- add_result(batch_w_lineage, 4, "Purity", "%a/a", function(n_row, stage) {95 + stage})
+  purity$result_value <- round(rnorm(nrow(purity), purity$result_value), 2)
+  purity$result_value[purity$result_value > 100] <- 100 - (purity$result_value[purity$result_value > 100] - 100)
+  purity$result_loq <- FALSE
+
+  water <- add_result(batch_w_lineage, 4, "Water", "%w/w", function(n_row, stage) { 4 - stage })
+  water$result_value <- round(rnorm(nrow(water), water$result_value), 2)
+  water$result_loq <- water$result_value < 0.05
+  water$result_value[water$result_loq] <- 0.05
+
+  data <- dplyr::bind_rows(purity, water)
+  data$batch_id <- as.integer(data$batch_base_id) + as.integer(data$batch_stage)
+  data$batch_id <- stringr::str_pad(data$batch_id, 8, side = "left", pad = "0")
+  data$batch_production_date <- data$batch_base_production_date + as.integer(data$batch_stage)
+
+  data$batch_base_id <- NULL
+  data$batch_base_production_date <- NULL
+  data$batch_base_id <- NULL
+
+  return(data)
 }

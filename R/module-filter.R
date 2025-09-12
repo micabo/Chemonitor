@@ -1,11 +1,11 @@
 filter_ui <- function(id, config) {
   d <- config$data[[1]]
-  date_range <- get_var_choices(d, "production_date")
+  date_range <- get_var_choices(d, "batch_production_date")
   filter_ids <- get_categorical_vars(d)
   tags <- tagList(
     dateRangeInput(
-      inputId = NS(id, "production_date"),
-      label = to_title("production_date"),
+      inputId = NS(id, "batch_production_date"),
+      label = to_title("batch_production_date"),
       format = "dd.mm.yyyy",
       weekstart = 1,
       start = date_range[[1]],
@@ -34,8 +34,8 @@ filter_server <- function(id, data) {
       row_selection <- TRUE
 
       # apply date filter
-      req(input$production_date)
-      row_selection <- date_in_range(tmp$production_date, get_var_choices(tmp, "production_date"))
+      req(input$batch_production_date)
+      row_selection <- date_in_range(tmp$batch_production_date, get_var_choices(tmp, "batch_production_date"))
 
       # apply categorical filters
       filter_ids <- get_categorical_vars(tmp)
@@ -56,9 +56,9 @@ filter_server <- function(id, data) {
 
 update_filter_ui <- function(session, data, reset = TRUE) {
   # update date range
-  date_range <- get_var_choices(data, "production_date")
-  freezeReactiveValue(session$input, "production_date")
-  updateDateRangeInput(session, "production_date", start = date_range[[1]], end = date_range[[2]])
+  date_range <- get_var_choices(data, "batch_production_date")
+  freezeReactiveValue(session$input, "batch_production_date")
+  updateDateRangeInput(session, "batch_production_date", start = date_range[[1]], end = date_range[[2]])
 
   # update filters
   ids <- get_categorical_vars(data)

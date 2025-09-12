@@ -36,16 +36,16 @@ get_var_choices <- function(obj, var, ...) {
 
 CHEMONITOR_VARS <- c(
   "product",
-  "stage",
+  "production_process",
+  "production_line",
   "batch_id",
+  "batch_stage",
+  "batch_production_date",
+  "batch_lineage",
   "result_name",
   "result_value",
   "result_unit",
-  "result_loq",
-  "production_date",
-  "production_line",
-  "production_process" # ,
-  # "lineage"
+  "result_loq"
 )
 
 
@@ -76,11 +76,12 @@ is_chemonitor_base <- function(x) {
 #' @export
 get_categorical_vars.chemonitor_base <- function(obj, ...) {
   c(
-    "stage",
-    "result_name",
+    "product",
+    "production_process",
     "production_line",
-    "production_process" # ,
-    # "lineage"
+    "batch_stage",
+    "batch_lineage",
+    "result_name"
   )
 }
 
@@ -117,8 +118,8 @@ to_plot.chemonitor_base <- function(obj, color_by = NULL, ...) {
     color_by <- "color"
   }
 
-  p <- category_plot(obj, "stage", "result_value",
-    order = "production_date",
+  p <- category_plot(obj, "batch_stage", "result_value",
+    order = "batch_production_date",
     colour = color_by,
     key = "row_id"
   )
