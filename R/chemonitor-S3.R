@@ -1,10 +1,15 @@
 # Factory ----------------------------------------------------------------------
 
-make_chemonitor_analysis <- function(d, type = c("default")) {
+chemonitor_analysis_types <- c("default", "scatter")
+
+
+make_chemonitor_analysis <- function(d, type = chemonitor_analysis_types) {
   stopifnot(is.data.frame(d))
   stopifnot(is.character(type))
   switch(type[[1]],
-    default = chemonitor_base(d)
+    default = chemonitor_base(d),
+    scatter = chemonitor_scatter(d),
+    stop("Unknown type")
   )
 }
 
@@ -34,7 +39,7 @@ get_var_choices <- function(obj, var, ...) {
 
 # Base Class -------------------------------------------------------------------
 
-CHEMONITOR_VARS <- c(
+chemonitor_vars <- c(
   "product",
   "production_process",
   "production_line",
@@ -54,15 +59,19 @@ chemonitor_base <- function(d) {
     return(d)
   }
   stopifnot(is.data.frame(d), nrow(d) > 0)
-  if (!all(CHEMONITOR_VARS %in% names(d))) {
-    stop("Missing data columns: ", paste(CHEMONITOR_VARS[!CHEMONITOR_VARS %in% names(d)]))
+  missing_vars <- chemonitor_vars[!chemonitor_vars %in% names(d)]
+  if (length(missing_vars) > 0) {
+    stop("Missing data columns: ", paste(missing_vars, collapse = ", "))
   }
 
   # data conversions and warnings
-  # TODO ...
+  # TODO
+  # - ensure proper date format
+  # - ensure stage is a factor
+  # - ensure LOQ is a factor
 
   # select only relevant variables and introduce a row_id
-  d <- d[CHEMONITOR_VARS]
+  d <- d[chemonitor_vars]
   d$row_id <- 1:nrow(d)
   structure(d, class = c("chemonitor_base", class(d)))
 }
@@ -76,12 +85,11 @@ is_chemonitor_base <- function(x) {
 #' @export
 get_categorical_vars.chemonitor_base <- function(obj, ...) {
   c(
-    "product",
+    "batch_stage",
+    "result_name",
     "production_process",
     "production_line",
-    "batch_stage",
-    "batch_lineage",
-    "result_name"
+    "batch_lineage"
   )
 }
 
@@ -140,4 +148,38 @@ plot_selection.chemonitor_base <- function(obj, ...) {
   if (nrow(selected_data) == 0) selected_data <- obj
 
   return(selected_data)
+}
+
+
+# Scatter ----------------------------------------------------------------------
+chemonitor_scatter <- function(d) {
+  if (is_chemonitor_scatter(d)) {
+    return(d)
+  }
+  if (!is_chemonitor_base(d)) {
+    d <- chemonitor_base(d)
+  }
+  structure(d, class = c("chemonitor_scatter", class(d)))
+}
+
+
+is_chemonitor_scatter <- function(x) {
+  inherits(x, "chemonitor_scatter")
+}
+
+
+#' @export
+to_plot.chemonitor_scatter <- function(obj, color_by = NULL, ...) {
+  if (!is.null(color_by)) {
+    obj$color <- do.call(combine_factors, obj[color_by])
+    color_by <- "color"
+  }
+
+  p <- scatter_plot(obj, "batch_production_date", "result_value",
+    colour = color_by,
+    key = "row_id"
+  )
+
+  p <- plotly::event_register(p, "plotly_selected")
+  p <- plotly::layout(p, dragmode = "select")
 }

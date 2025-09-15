@@ -4,7 +4,7 @@ analysis_ui <- function(id, config) {
     create_select_input(
       inputId = NS(id, "analysis_type"),
       label = to_title("analysis_type"),
-      choices = c("scatter", "boxplot", "depletion", "correlation")
+      choices = chemonitor_analysis_types
     ),
     checkboxInput(
       inputId = NS(id, "show_limits"),
@@ -33,15 +33,15 @@ analysis_out <- function(id) {
 analysis_server <- function(id, data) {
   stopifnot(is.reactive(data))
   moduleServer(id, function(input, output, session) {
-    output$plot <- plotly::renderPlotly({
-      to_plot(data(),
-        color_by = input$color_by
-      )
+    d_analysis <- reactive({
+      make_chemonitor_analysis(data(), type = input$analysis_type)
     })
 
-    selection <- reactive(plot_selection(data()))
+    output$plot <- plotly::renderPlotly({
+      to_plot(d_analysis(), color_by = input$color_by)
+    })
 
-    output$selection_table <- DT::renderDataTable(selection(),
+    output$selection_table <- DT::renderDataTable(plot_selection(d_analysis()),
       options = list(pageLength = 10, autoWidth = TRUE, scrollX = TRUE)
     )
   })

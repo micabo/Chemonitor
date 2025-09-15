@@ -29,6 +29,13 @@ base_plot <- function(data) {
 
 add_points <- function(g, x, y, order = NULL, colour = NULL, shape = NULL, text = NULL, key = NULL) {
   stopifnot(is_ggplot(g))
+  plot_aes <- create_aes(x, y, order = NULL, colour = colour, shape = shape, text = text, key = key)
+  g + geom_point(mapping = plot_aes)
+}
+
+
+add_ordered_points <- function(g, x, y, order = NULL, colour = NULL, shape = NULL, text = NULL, key = NULL) {
+  stopifnot(is_ggplot(g))
   plot_aes <- create_aes(x, y, order, colour, shape, text, key)
   g + geom_point(mapping = plot_aes, position = position_ordered(0.1))
 }
@@ -83,6 +90,23 @@ add_theme <- function(g, ...) {
 }
 
 
+scatter_plot <- function(data, x, y,
+                         colour = NULL, shape = NULL, facet = NULL,
+                         show_limits = FALSE, limit_low = NULL, limit_high = NULL,
+                         text = NULL, key = NULL,
+                         title = NULL, x_title = NULL, y_title = NULL, ...) {
+  g <- base_plot(data) |>
+    add_points(x, y, colour = colour, shape = shape, text = text, key = key) |>
+    add_limits(show_limits, limit_low, limit_high) |>
+    add_facetting(facet) |>
+    add_titles(title, x_title, y_title) |>
+    add_theme()
+
+  p <- plotly::ggplotly(g, ...)
+  return(p)
+}
+
+
 category_plot <- function(data, x, y,
                           order = NULL, colour = NULL, shape = NULL,
                           facet = NULL,
@@ -90,7 +114,7 @@ category_plot <- function(data, x, y,
                           text = NULL, key = NULL,
                           title = NULL, x_title = NULL, y_title = NULL, ...) {
   g <- base_plot(data) |>
-    add_points(x, y, order, colour, shape, text, key) |>
+    add_ordered_points(x, y, order, colour, shape, text, key) |>
     add_limits(show_limits, limit_low, limit_high) |>
     add_facetting(facet) |>
     add_titles(title, x_title, y_title) |>
